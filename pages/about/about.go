@@ -48,14 +48,20 @@ func (p *Page) NavItem() component.NavItem {
 }
 
 func (p *Page) Layout(gtx C, th *material.Theme) D {
-	p.List.Axis = layout.Vertical
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
 		return layout.Flex{
-			Alignment: layout.Middle,
+			Alignment: layout.Start,
 			Axis:      layout.Vertical,
+			Spacing:   layout.SpaceSides,
 		}.Layout(gtx,
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return alo.DefaultInset.Layout(gtx, material.Body1(th, `This is the project's about page!`).Layout)
+				return alo.DefaultInset.Layout(gtx, material.H2(th, "KubeScope").Layout)
+			}),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				return alo.DefaultInset.Layout(gtx, material.Body1(th, `KubeScope provides real-time visibility into
+your Kubernetes cluster's health and performance. 
+Monitor, troubleshoot, and optimize with ease 
+for seamless operations.`).Layout)
 			}),
 		)
 	})

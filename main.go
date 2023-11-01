@@ -52,6 +52,7 @@ func main() {
 func draw(w *app.Window) error {
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
+
 	var ops op.Ops
 
 	router := page.NewRouter()
