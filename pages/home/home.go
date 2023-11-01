@@ -24,12 +24,16 @@ type (
 type Page struct {
 	widget.List
 	*page.Router
+	podCount       int
+	nameSpaceCount int
 }
 
 // New constructs a Page with the provided router.
-func New(router *page.Router) *Page {
+func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
 	return &Page{
-		Router: router,
+		Router:         router,
+		podCount:       kubeConfig.GetPodCount(),
+		nameSpaceCount: len(kubeConfig.Namespaces),
 	}
 }
 
@@ -51,17 +55,18 @@ func (p *Page) NavItem() component.NavItem {
 }
 
 func (p *Page) Layout(gtx C, th *material.Theme) D {
-	opts := kubernetes.GetKubeConfig()
-	opts.CreateConfig()
-
 	p.List.Axis = layout.Vertical
+
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
 		return layout.Flex{
 			Alignment: layout.Start,
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
-			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return alo.DefaultInset.Layout(gtx, material.H1(th, fmt.Sprintf("%d Pods!", opts.GetPodCount())).Layout)
+			layout.Rigid(func(gtx layout.Context) D {
+				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("%d Pods!", p.podCount)).Layout)
+			}),
+			layout.Rigid(func(gtx layout.Context) D {
+				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("%d Namespaces!", p.nameSpaceCount)).Layout)
 			}),
 		)
 	})

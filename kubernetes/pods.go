@@ -8,14 +8,16 @@ import (
 )
 
 func (opts *KubeConfigOptions) GetPodCount() int {
-	var err error
+	if opts.Client != nil {
+		pods, err := opts.Client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return 0
+		}
 
-	pods, err := opts.Client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
+		return len(pods.Items)
+	} else {
 		return 0
 	}
-
-	return len(pods.Items)
 }
 
 func (opts *KubeConfigOptions) GetPodStatuses() (error, [][]string) {

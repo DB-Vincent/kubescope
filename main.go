@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
 	"github.com/DB-Vincent/kubescope/pages/about"
 	"github.com/DB-Vincent/kubescope/pages/home"
-	"github.com/DB-Vincent/kubescope/pages/pods"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -19,6 +19,8 @@ import (
 	"gioui.org/widget/material"
 )
 
+var opts kubernetes.KubeConfigOptions
+
 type (
 	C = layout.Context
 	D = layout.Dimensions
@@ -26,6 +28,15 @@ type (
 
 func main() {
 	flag.Parse()
+
+	var err error
+	initialConfig := kubernetes.GetKubeConfig()
+	err, opts = initialConfig.CreateConfig()
+	opts.GetNamespaces()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	go func() {
 		w := app.NewWindow(
 			app.Title("KubeScope"),
@@ -44,9 +55,8 @@ func draw(w *app.Window) error {
 	var ops op.Ops
 
 	router := page.NewRouter()
-	router.Register(0, home.New(&router))
-	router.Register(1, pods.New(&router))
-	router.Register(2, about.New(&router))
+	router.Register(0, home.New(&router, &opts))
+	router.Register(1, about.New(&router))
 
 	for {
 		select {
