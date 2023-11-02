@@ -20,7 +20,22 @@ var OtherIcon *widget.Icon = func() *widget.Icon {
 	return icon
 }()
 
-var GridIcon *widget.Icon = func() *widget.Icon {
-	icon, _ := widget.NewIcon(icons.ImageGridOn)
+var PodsIcon *widget.Icon = func() *widget.Icon {
+	icon, _ := widget.NewIcon(icons.ActionDashboard)
+	return icon
+}()
+
+var DeploymentsIcon *widget.Icon = func() *widget.Icon {
+	icon, _ := widget.NewIcon(icons.ActionViewAgenda)
+	return icon
+}()
+
+var DaemonSetsIcon *widget.Icon = func() *widget.Icon {
+	icon, _ := widget.NewIcon(icons.ActionDNS)
+	return icon
+}()
+
+var ReplicaSetsIcon *widget.Icon = func() *widget.Icon {
+	icon, _ := widget.NewIcon(icons.ActionViewModule)
 	return icon
 }()

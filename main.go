@@ -8,7 +8,11 @@ import (
 
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
+	"github.com/DB-Vincent/kubescope/pages/daemonsets"
+	"github.com/DB-Vincent/kubescope/pages/deployments"
 	"github.com/DB-Vincent/kubescope/pages/home"
+	"github.com/DB-Vincent/kubescope/pages/pods"
+	"github.com/DB-Vincent/kubescope/pages/replicasets"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -59,6 +63,10 @@ func draw(w *app.Window) error {
 
 	router := page.NewRouter()
 	router.Register(0, home.New(&router, &opts))
+	router.Register(1, pods.New(&router, &opts))
+	router.Register(2, deployments.New(&router, &opts))
+	router.Register(3, daemonsets.New(&router, &opts))
+	router.Register(4, replicasets.New(&router, &opts))
 
 	for {
 		select {

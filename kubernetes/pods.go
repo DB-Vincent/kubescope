@@ -7,24 +7,24 @@ import (
 )
 
 type Pod struct {
-	name     string
-	status   string
-	creation string
+	Name     string
+	Status   string
+	Creation string
 }
 
 type Deployment struct {
-	name     string
-	creation string
+	Name     string
+	Creation string
 }
 
 type DaemonSet struct {
-	name     string
-	creation string
+	Name     string
+	Creation string
 }
 
 type ReplicaSet struct {
-	name     string
-	creation string
+	Name     string
+	Creation string
 }
 
 func (opts *KubeConfigOptions) GetPods() ([]Pod, error) {
@@ -37,7 +37,7 @@ func (opts *KubeConfigOptions) GetPods() ([]Pod, error) {
 	}
 
 	for _, pod := range pods.Items {
-		podList = append(podList, Pod{name: pod.Name, status: string(pod.Status.Phase), creation: pod.CreationTimestamp.GoString()})
+		podList = append(podList, Pod{Name: pod.Name, Status: string(pod.Status.Phase), Creation: pod.CreationTimestamp.GoString()})
 	}
 
 	return podList, nil
@@ -53,7 +53,7 @@ func (opts *KubeConfigOptions) GetDeployments() ([]Deployment, error) {
 	}
 
 	for _, deployment := range deployments.Items {
-		deployList = append(deployList, Deployment{name: deployment.Name, creation: deployment.CreationTimestamp.GoString()})
+		deployList = append(deployList, Deployment{Name: deployment.Name, Creation: deployment.CreationTimestamp.GoString()})
 	}
 
 	return deployList, nil
@@ -69,7 +69,7 @@ func (opts *KubeConfigOptions) GetDaemonSets() ([]DaemonSet, error) {
 	}
 
 	for _, daemonset := range daemonsets.Items {
-		daemonsetList = append(daemonsetList, DaemonSet{name: daemonset.Name, creation: daemonset.CreationTimestamp.GoString()})
+		daemonsetList = append(daemonsetList, DaemonSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp.GoString()})
 	}
 
 	return daemonsetList, nil
@@ -85,7 +85,7 @@ func (opts *KubeConfigOptions) GetReplicaSets() ([]ReplicaSet, error) {
 	}
 
 	for _, daemonset := range daemonsets.Items {
-		replicasetList = append(replicasetList, ReplicaSet{name: daemonset.Name, creation: daemonset.CreationTimestamp.GoString()})
+		replicasetList = append(replicasetList, ReplicaSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp.GoString()})
 	}
 
 	return replicasetList, nil
