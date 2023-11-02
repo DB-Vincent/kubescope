@@ -24,16 +24,44 @@ type (
 type Page struct {
 	widget.List
 	*page.Router
-	podCount       int
-	nameSpaceCount int
+
+	// Kubernetes counts
+	podCount        int
+	deployCount     int
+	daemonSetCount  int
+	replicaSetCount int
+	nameSpaceCount  int
 }
 
 // New constructs a Page with the provided router.
 func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
+	pods, err := kubeConfig.GetPods()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	deploys, err := kubeConfig.GetDeployments()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	daemonSets, err := kubeConfig.GetDaemonSets()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	replicaSets, err := kubeConfig.GetReplicaSets()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return &Page{
-		Router:         router,
-		podCount:       kubeConfig.GetPodCount(),
-		nameSpaceCount: len(kubeConfig.Namespaces),
+		Router:          router,
+		podCount:        len(pods),
+		deployCount:     len(deploys),
+		daemonSetCount:  len(daemonSets),
+		replicaSetCount: len(replicaSets),
+		nameSpaceCount:  len(kubeConfig.Namespaces),
 	}
 }
 
@@ -63,10 +91,10 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
 			layout.Rigid(func(gtx layout.Context) D {
-				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("%d Pods!", p.podCount)).Layout)
+				return alo.DefaultInset.Layout(gtx, material.H3(th, "Welcome!").Layout)
 			}),
 			layout.Rigid(func(gtx layout.Context) D {
-				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("%d Namespaces!", p.nameSpaceCount)).Layout)
+				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("You're running %d Pods, %d Deployments, %d DaemonSets and %d ReplicaSets in %d Namespaces", p.podCount, p.deployCount, p.daemonSetCount, p.replicaSetCount, p.nameSpaceCount)).Layout)
 			}),
 		)
 	})

@@ -14,7 +14,7 @@ type KubeConfigOptions struct {
 	Client *kubernetes.Clientset
 }
 
-func (opts *KubeConfigOptions) CreateConfig() (error, KubeConfigOptions) {
+func (opts *KubeConfigOptions) CreateConfig() (KubeConfigOptions, error) {
 	var err error
 
 	kubeConfig.Config = &rest.Config{
@@ -27,10 +27,10 @@ func (opts *KubeConfigOptions) CreateConfig() (error, KubeConfigOptions) {
 
 	kubeConfig.Client, err = kubernetes.NewForConfig(kubeConfig.Config)
 	if err != nil {
-		return err, KubeConfigOptions{}
+		return KubeConfigOptions{}, err
 	}
 
-	return nil, kubeConfig
+	return kubeConfig, nil
 }
 
 func GetKubeConfig() KubeConfigOptions {

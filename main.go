@@ -8,7 +8,6 @@ import (
 
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
-	"github.com/DB-Vincent/kubescope/pages/about"
 	"github.com/DB-Vincent/kubescope/pages/home"
 
 	"gioui.org/app"
@@ -32,7 +31,7 @@ func main() {
 
 	var err error
 	initialConfig := kubernetes.GetKubeConfig()
-	err, opts = initialConfig.CreateConfig()
+	opts, err = initialConfig.CreateConfig()
 	opts.GetNamespaces()
 	if err != nil {
 		log.Fatal(err)
@@ -53,13 +52,13 @@ func main() {
 func draw(w *app.Window) error {
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
-	th.Palette.ContrastBg = color.NRGBA{0, 0, 0, 0xFF}
+	th.Palette.ContrastBg = color.NRGBA{0, 64, 160, 255}
+	th.Palette.ContrastFg = color.NRGBA{228, 226, 230, 255}
 
 	var ops op.Ops
 
 	router := page.NewRouter()
 	router.Register(0, home.New(&router, &opts))
-	router.Register(1, about.New(&router))
 
 	for {
 		select {
