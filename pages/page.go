@@ -39,7 +39,7 @@ func NewRouter() Router {
 
 	na := component.VisibilityAnimation{
 		State:    component.Invisible,
-		Duration: time.Millisecond * 50,
+		Duration: time.Millisecond * 250,
 	}
 	return Router{
 		pages:          make(map[interface{}]Page),

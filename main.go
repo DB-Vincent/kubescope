@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"image/color"
 	"log"
 	"os"
 
@@ -52,6 +53,7 @@ func main() {
 func draw(w *app.Window) error {
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
+	th.Palette.ContrastBg = color.NRGBA{0, 0, 0, 0xFF}
 
 	var ops op.Ops
 
