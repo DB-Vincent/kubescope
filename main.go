@@ -58,6 +58,7 @@ func draw(w *app.Window) error {
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	th.Palette.ContrastBg = color.NRGBA{0, 64, 160, 255}
 	th.Palette.ContrastFg = color.NRGBA{228, 226, 230, 255}
+	th.Palette.Bg = color.NRGBA{0xf2, 0xf2, 0xf2, 0xff}
 
 	var ops op.Ops
 

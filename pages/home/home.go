@@ -2,13 +2,17 @@ package home
 
 import (
 	"fmt"
+	"image"
+	"image/color"
 
 	"gioui.org/layout"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 
-	alo "github.com/DB-Vincent/kubescope/applayout"
 	"github.com/DB-Vincent/kubescope/icon"
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
@@ -82,20 +86,88 @@ func (p *Page) NavItem() component.NavItem {
 	}
 }
 
+type HomepageItem struct {
+	item  string
+	count int
+}
+
 func (p *Page) Layout(gtx C, th *material.Theme) D {
 	p.List.Axis = layout.Vertical
+
+	var list = layout.List{
+		Axis: layout.Vertical,
+		Position: layout.Position{
+			Offset: 24,
+		},
+	}
+
+	var items = []HomepageItem{
+		{item: "Pods", count: p.podCount},
+		{item: "Deployments", count: p.deployCount},
+		{item: "DaemonSets", count: p.daemonSetCount},
+		{item: "ReplicaSets", count: p.replicaSetCount},
+		{item: "Namespaces", count: p.nameSpaceCount},
+	}
 
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
 		return layout.Flex{
 			Alignment: layout.Start,
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
-			layout.Rigid(func(gtx layout.Context) D {
-				return alo.DefaultInset.Layout(gtx, material.H3(th, "Welcome!").Layout)
-			}),
-			layout.Rigid(func(gtx layout.Context) D {
-				return alo.DefaultInset.Layout(gtx, material.Body1(th, fmt.Sprintf("You're running %d Pods, %d Deployments, %d DaemonSets and %d ReplicaSets in %d Namespaces", p.podCount, p.deployCount, p.daemonSetCount, p.replicaSetCount, p.nameSpaceCount)).Layout)
+			layout.Rigid(func(gtx C) D {
+				return list.Layout(gtx, len(items), func(gtx C, index int) D {
+					return layout.Inset{Top: unit.Dp(8), Right: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8)}.Layout(gtx, func(gtx C) D {
+						return layout.Stack{}.Layout(gtx,
+							layout.Expanded(func(gtx C) D {
+								gtx.Constraints.Min.X = gtx.Constraints.Max.X
+								return fill{rgb(0xffffff)}.Layout(gtx)
+							}),
+							layout.Stacked(func(gtx C) D {
+								in := layout.Inset{Right: unit.Dp(8), Left: unit.Dp(8)}
+								return in.Layout(gtx, func(gtx C) D {
+									sz := image.Point{X: gtx.Dp(unit.Dp(150)), Y: gtx.Dp(unit.Dp(100))}
+									gtx.Constraints = layout.Exact(gtx.Constraints.Constrain(sz))
+
+									return layout.Flex{
+										Alignment: layout.Baseline,
+										Axis:      layout.Vertical,
+										Spacing:   layout.SpaceSides,
+									}.Layout(gtx,
+										layout.Rigid(func(gtx C) D {
+											return material.H3(th, fmt.Sprintf("%d", items[index].count)).Layout(gtx)
+										}),
+										layout.Rigid(func(gtx C) D {
+											return material.Body1(th, items[index].item).Layout(gtx)
+										}),
+									)
+								})
+							}),
+						)
+					})
+				})
 			}),
 		)
 	})
+}
+
+func rgb(c uint32) color.NRGBA {
+	return argb((0xff << 24) | c)
+}
+
+func argb(c uint32) color.NRGBA {
+	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
+}
+
+type fill struct {
+	col color.NRGBA
+}
+
+func (f fill) Layout(gtx layout.Context) layout.Dimensions {
+	d := image.Point{X: gtx.Dp(unit.Dp(150)), Y: gtx.Dp(unit.Dp(100))}
+	dr := image.Rectangle{
+		Max: image.Point{X: d.X, Y: d.Y},
+	}
+
+	paint.FillShape(gtx.Ops, f.col, clip.RRect{Rect: dr, SE: 10, SW: 10, NW: 10, NE: 10}.Op(gtx.Ops))
+	return layout.Dimensions{Size: d}
 }
