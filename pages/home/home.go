@@ -12,6 +12,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
+	"gioui.org/x/outlay"
 
 	"github.com/DB-Vincent/kubescope/icon"
 	"github.com/DB-Vincent/kubescope/kubernetes"
@@ -94,12 +95,12 @@ type HomepageItem struct {
 func (p *Page) Layout(gtx C, th *material.Theme) D {
 	p.List.Axis = layout.Vertical
 
-	var list = layout.List{
-		Axis: layout.Vertical,
-		Position: layout.Position{
-			Offset: 24,
-		},
-	}
+	// var list = layout.List{
+	// 	Axis: layout.Vertical,
+	// 	Position: layout.Position{
+	// 		Offset: 24,
+	// 	},
+	// }
 
 	var items = []HomepageItem{
 		{item: "Pods", count: p.podCount},
@@ -109,38 +110,40 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 		{item: "Namespaces", count: p.nameSpaceCount},
 	}
 
+	hGrid := outlay.Flow{
+		Num:  2,
+		Axis: layout.Horizontal,
+	}
+
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
 		return layout.Flex{
 			Alignment: layout.Start,
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
 			layout.Rigid(func(gtx C) D {
-				return list.Layout(gtx, len(items), func(gtx C, index int) D {
+				return hGrid.Layout(gtx, len(items), func(gtx layout.Context, i int) layout.Dimensions {
 					return layout.Inset{Top: unit.Dp(8), Right: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8)}.Layout(gtx, func(gtx C) D {
+						// return layout.Inset{}.Layout(gtx, func(gtx C) D {
 						return layout.Stack{}.Layout(gtx,
 							layout.Expanded(func(gtx C) D {
 								gtx.Constraints.Min.X = gtx.Constraints.Max.X
 								return fill{rgb(0xffffff)}.Layout(gtx)
 							}),
 							layout.Stacked(func(gtx C) D {
-								in := layout.Inset{Right: unit.Dp(8), Left: unit.Dp(8)}
-								return in.Layout(gtx, func(gtx C) D {
-									sz := image.Point{X: gtx.Dp(unit.Dp(150)), Y: gtx.Dp(unit.Dp(100))}
-									gtx.Constraints = layout.Exact(gtx.Constraints.Constrain(sz))
+								sz := image.Point{X: gtx.Dp(unit.Dp(150)), Y: gtx.Dp(unit.Dp(100))}
+								gtx.Constraints = layout.Exact(gtx.Constraints.Constrain(sz))
 
-									return layout.Flex{
-										Alignment: layout.Baseline,
-										Axis:      layout.Vertical,
-										Spacing:   layout.SpaceSides,
-									}.Layout(gtx,
-										layout.Rigid(func(gtx C) D {
-											return material.H3(th, fmt.Sprintf("%d", items[index].count)).Layout(gtx)
-										}),
-										layout.Rigid(func(gtx C) D {
-											return material.Body1(th, items[index].item).Layout(gtx)
-										}),
-									)
-								})
+								return layout.Flex{
+									Axis:    layout.Vertical,
+									Spacing: layout.SpaceSides,
+								}.Layout(gtx,
+									layout.Rigid(func(gtx C) D {
+										return material.H3(th, fmt.Sprintf("%d", items[i].count)).Layout(gtx)
+									}),
+									layout.Rigid(func(gtx C) D {
+										return material.Body1(th, items[i].item).Layout(gtx)
+									}),
+								)
 							}),
 						)
 					})
