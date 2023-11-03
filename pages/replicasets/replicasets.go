@@ -1,6 +1,8 @@
 package replicasets
 
 import (
+	"image/color"
+
 	"gioui.org/layout"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -24,8 +26,12 @@ type Page struct {
 	widget.List
 	*page.Router
 
-	// Kubernetes counts
+	// Kubernetes
+	kubeConfig  *kubernetes.KubeConfigOptions
 	replicasets []kubernetes.ReplicaSet
+
+	// Refresh
+	refreshBtn widget.Clickable
 }
 
 // New constructs a Page with the provided router.
@@ -38,13 +44,32 @@ func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
 	return &Page{
 		Router:      router,
 		replicasets: replicasets,
+		kubeConfig:  kubeConfig,
 	}
 }
 
 var _ page.Page = &Page{}
 
 func (p *Page) Actions() []component.AppBarAction {
-	return []component.AppBarAction{}
+	return []component.AppBarAction{
+		{
+			OverflowAction: component.OverflowAction{
+				Name: "Refresh",
+				Tag:  &p.refreshBtn,
+			},
+			Layout: func(gtx layout.Context, bg, fg color.NRGBA) layout.Dimensions {
+				if p.refreshBtn.Clicked() {
+					replicasets, err := p.kubeConfig.GetReplicaSets()
+					if err != nil {
+						panic(err.Error())
+					}
+					p.replicasets = replicasets
+				}
+				btn := component.SimpleIconButton(bg, fg, &p.refreshBtn, icon.RefreshIcon)
+				return btn.Layout(gtx)
+			},
+		},
+	}
 }
 
 func (p *Page) Overflow() []component.OverflowAction {

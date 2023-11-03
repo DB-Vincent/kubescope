@@ -27,8 +27,12 @@ type Page struct {
 	widget.List
 	*page.Router
 
-	// Kubernetes counts
-	pods []kubernetes.Pod
+	// Kubernetes
+	kubeConfig *kubernetes.KubeConfigOptions
+	pods       []kubernetes.Pod
+
+	// Refresh
+	refreshBtn widget.Clickable
 }
 
 // New constructs a Page with the provided router.
@@ -39,15 +43,34 @@ func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
 	}
 
 	return &Page{
-		Router: router,
-		pods:   pods,
+		Router:     router,
+		kubeConfig: kubeConfig,
+		pods:       pods,
 	}
 }
 
 var _ page.Page = &Page{}
 
 func (p *Page) Actions() []component.AppBarAction {
-	return []component.AppBarAction{}
+	return []component.AppBarAction{
+		{
+			OverflowAction: component.OverflowAction{
+				Name: "Refresh",
+				Tag:  &p.refreshBtn,
+			},
+			Layout: func(gtx layout.Context, bg, fg color.NRGBA) layout.Dimensions {
+				if p.refreshBtn.Clicked() {
+					pods, err := p.kubeConfig.GetPods()
+					if err != nil {
+						panic(err.Error())
+					}
+					p.pods = pods
+				}
+				btn := component.SimpleIconButton(bg, fg, &p.refreshBtn, icon.RefreshIcon)
+				return btn.Layout(gtx)
+			},
+		},
+	}
 }
 
 func (p *Page) Overflow() []component.OverflowAction {

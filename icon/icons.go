@@ -10,6 +10,11 @@ var MenuIcon *widget.Icon = func() *widget.Icon {
 	return icon
 }()
 
+var RefreshIcon *widget.Icon = func() *widget.Icon {
+	icon, _ := widget.NewIcon(icons.NavigationRefresh)
+	return icon
+}()
+
 var HomeIcon *widget.Icon = func() *widget.Icon {
 	icon, _ := widget.NewIcon(icons.ActionHome)
 	return icon
