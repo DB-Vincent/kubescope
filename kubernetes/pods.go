@@ -9,7 +9,7 @@ import (
 type Pod struct {
 	Name     string
 	Status   string
-	Creation string
+	Creation metav1.Time
 }
 
 type Deployment struct {
@@ -37,7 +37,11 @@ func (opts *KubeConfigOptions) GetPods() ([]Pod, error) {
 	}
 
 	for _, pod := range pods.Items {
-		podList = append(podList, Pod{Name: pod.Name, Status: string(pod.Status.Phase), Creation: pod.CreationTimestamp.GoString()})
+		podList = append(podList, Pod{
+			Name:     pod.Name,
+			Status:   string(pod.Status.Phase),
+			Creation: pod.CreationTimestamp,
+		})
 	}
 
 	return podList, nil

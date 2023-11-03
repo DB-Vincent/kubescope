@@ -1,11 +1,13 @@
 package pods
 
 import (
-	"fmt"
+	"image"
 	"image/color"
+	"sort"
 
 	"gioui.org/layout"
-	"gioui.org/text"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -14,6 +16,7 @@ import (
 	"github.com/DB-Vincent/kubescope/icon"
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
+	"github.com/xeonx/timeago"
 )
 
 type (
@@ -87,7 +90,6 @@ func (p *Page) NavItem() component.NavItem {
 func (p *Page) Layout(gtx C, th *material.Theme) D {
 	p.List.Axis = layout.Vertical
 
-	var fontSize unit.Sp = 16
 	var visList = layout.List{
 		Axis: layout.Vertical,
 		Position: layout.Position{
@@ -96,10 +98,15 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 	}
 
 	margins := layout.Inset{
-		Top:   unit.Dp(8),
-		Right: unit.Dp(8),
-		Left:  unit.Dp(8),
+		Top:    unit.Dp(8),
+		Right:  unit.Dp(8),
+		Left:   unit.Dp(8),
+		Bottom: unit.Dp(8),
 	}
+
+	sort.SliceStable(p.pods, func(i, j int) bool {
+		return p.pods[i].Name < p.pods[j].Name
+	})
 
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
 		return layout.Flex{
@@ -111,20 +118,55 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 					func(gtx C) D {
 						return visList.Layout(gtx, len(p.pods),
 							func(gtx C, index int) D {
-								paragraph := material.Label(th, unit.Sp(float32(fontSize)), fmt.Sprintf("%s (%s)", p.pods[index].Name, p.pods[index].Status))
-								switch p.pods[index].Status {
-								case "Running":
-									paragraph.Color = color.NRGBA{0, 128, 0, 0xFF}
-									break
-								case "Succeeded":
-									paragraph.Color = color.NRGBA{128, 128, 128, 0xFF}
-									break
-								case "Pending":
-									paragraph.Color = color.NRGBA{255, 165, 0, 0xFF}
-									break
-								}
-								paragraph.Alignment = text.Start
-								return paragraph.Layout(gtx)
+
+								in := layout.Inset{Bottom: unit.Dp(8)}
+								return in.Layout(gtx, func(gtx C) D {
+									return layout.Stack{}.Layout(gtx,
+										layout.Expanded(func(gtx C) D {
+											gtx.Constraints.Min.X = gtx.Constraints.Max.X
+											return fill{rgb(0xffffff)}.Layout(gtx)
+										}),
+										layout.Stacked(func(gtx C) D {
+											in := layout.Inset{Top: unit.Dp(8), Right: unit.Dp(16), Bottom: unit.Dp(8), Left: unit.Dp(16)}
+											return in.Layout(gtx, func(gtx C) D {
+												return layout.Flex{
+													Axis:    layout.Vertical,
+													Spacing: layout.SpaceSides,
+												}.Layout(gtx,
+													layout.Rigid(func(gtx C) D {
+														return material.H6(th, p.pods[index].Name).Layout(gtx)
+													}),
+													layout.Rigid(func(gtx C) D {
+														// p.pods[index].Creation.Format(time.RFC822)
+														format := timeago.NoMax(timeago.English)
+														return material.Body2(th, format.Format(p.pods[index].Creation.Time)).Layout(gtx)
+													}),
+													layout.Rigid(func(gtx C) D {
+														status := material.Body1(th, p.pods[index].Status)
+														switch p.pods[index].Status {
+														case "Pending":
+															status.Color = rgb(0xFFA500)
+															break
+														case "Running":
+															status.Color = rgb(0x378805)
+															break
+														case "Succeeded":
+															status.Color = rgb(0x1AA7EC)
+															break
+														case "Failed":
+															status.Color = rgb(0xDE0A26)
+															break
+														case "Unknown":
+															status.Color = rgb(0x643B9F)
+															break
+														}
+														return status.Layout(gtx)
+													}),
+												)
+											})
+										}),
+									)
+								})
 							},
 						)
 					},
@@ -133,4 +175,27 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 			}),
 		)
 	})
+}
+
+func rgb(c uint32) color.NRGBA {
+	return argb((0xff << 24) | c)
+}
+
+func argb(c uint32) color.NRGBA {
+	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
+}
+
+type fill struct {
+	col color.NRGBA
+}
+
+func (f fill) Layout(gtx layout.Context) layout.Dimensions {
+	cs := gtx.Constraints
+	d := cs.Min
+	dr := image.Rectangle{
+		Max: image.Point{X: d.X, Y: d.Y},
+	}
+
+	paint.FillShape(gtx.Ops, f.col, clip.RRect{Rect: dr, SE: 10, SW: 10, NW: 10, NE: 10}.Op(gtx.Ops))
+	return layout.Dimensions{Size: d}
 }

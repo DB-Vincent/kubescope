@@ -15,6 +15,7 @@ import (
 	"github.com/DB-Vincent/kubescope/pages/replicasets"
 
 	"gioui.org/app"
+	"gioui.org/font"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
 	"gioui.org/layout"
@@ -59,6 +60,7 @@ func draw(w *app.Window) error {
 	th.Palette.ContrastBg = color.NRGBA{0, 64, 160, 255}
 	th.Palette.ContrastFg = color.NRGBA{228, 226, 230, 255}
 	th.Palette.Bg = color.NRGBA{0xf2, 0xf2, 0xf2, 0xff}
+	th.Face = font.Typeface("sans-serif")
 
 	var ops op.Ops
 
