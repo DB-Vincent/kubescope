@@ -1,6 +1,7 @@
 package replicasets
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"sort"
@@ -144,6 +145,9 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 															// p.pods[index].Creation.Format(time.RFC822)
 															format := timeago.NoMax(timeago.English)
 															return material.Body2(th, format.Format(p.replicasets[index].Creation.Time)).Layout(gtx)
+														}),
+														layout.Rigid(func(gtx C) D {
+															return material.Body2(th, fmt.Sprintf("%d/%d replicas available", p.replicasets[index].AvailableReplicas, p.replicasets[index].WantedReplicas)).Layout(gtx)
 														}),
 													)
 												})

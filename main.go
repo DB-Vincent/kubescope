@@ -37,10 +37,12 @@ func main() {
 	var err error
 	initialConfig := kubernetes.GetKubeConfig()
 	opts, err = initialConfig.CreateConfig()
-	opts.GetNamespaces()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	opts.GetNamespaces()
+	opts.GetNodes()
 
 	go func() {
 		w := app.NewWindow(

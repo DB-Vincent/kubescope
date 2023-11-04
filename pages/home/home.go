@@ -38,6 +38,7 @@ type Page struct {
 	daemonSetCount  int
 	replicaSetCount int
 	nameSpaceCount  int
+	nodeCount       int
 }
 
 // New constructs a Page with the provided router.
@@ -75,6 +76,7 @@ func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
 		daemonSetCount:  len(daemonSets),
 		replicaSetCount: len(replicaSets),
 		nameSpaceCount:  len(kubeConfig.Namespaces),
+		nodeCount:       len(kubeConfig.Nodes),
 	}
 }
 
@@ -116,6 +118,7 @@ func (p *Page) Layout(gtx C, th *material.Theme) D {
 						{item: "DaemonSets", count: p.daemonSetCount},
 						{item: "ReplicaSets", count: p.replicaSetCount},
 						{item: "Namespaces", count: p.nameSpaceCount},
+						{item: "Nodes", count: p.nodeCount},
 					}
 
 					hGrid := outlay.Flow{

@@ -13,8 +13,10 @@ type Pod struct {
 }
 
 type Deployment struct {
-	Name     string
-	Creation metav1.Time
+	Name              string
+	WantedReplicas    int
+	AvailableReplicas int
+	Creation          metav1.Time
 }
 
 type DaemonSet struct {
@@ -23,8 +25,10 @@ type DaemonSet struct {
 }
 
 type ReplicaSet struct {
-	Name     string
-	Creation metav1.Time
+	Name              string
+	WantedReplicas    int
+	AvailableReplicas int
+	Creation          metav1.Time
 }
 
 func (opts *KubeConfigOptions) GetPods() ([]Pod, error) {
@@ -57,7 +61,12 @@ func (opts *KubeConfigOptions) GetDeployments() ([]Deployment, error) {
 	}
 
 	for _, deployment := range deployments.Items {
-		deployList = append(deployList, Deployment{Name: deployment.Name, Creation: deployment.CreationTimestamp})
+		deployList = append(deployList, Deployment{
+			Name:              deployment.Name,
+			WantedReplicas:    int(*deployment.Spec.Replicas),
+			AvailableReplicas: int(deployment.Status.AvailableReplicas),
+			Creation:          deployment.CreationTimestamp,
+		})
 	}
 
 	return deployList, nil
@@ -73,7 +82,10 @@ func (opts *KubeConfigOptions) GetDaemonSets() ([]DaemonSet, error) {
 	}
 
 	for _, daemonset := range daemonsets.Items {
-		daemonsetList = append(daemonsetList, DaemonSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp})
+		daemonsetList = append(daemonsetList, DaemonSet{
+			Name:     daemonset.Name,
+			Creation: daemonset.CreationTimestamp,
+		})
 	}
 
 	return daemonsetList, nil
@@ -83,13 +95,18 @@ func (opts *KubeConfigOptions) GetReplicaSets() ([]ReplicaSet, error) {
 	var err error
 	var replicasetList []ReplicaSet
 
-	daemonsets, err := opts.Client.AppsV1().ReplicaSets("").List(context.TODO(), metav1.ListOptions{})
+	replicasets, err := opts.Client.AppsV1().ReplicaSets("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	for _, daemonset := range daemonsets.Items {
-		replicasetList = append(replicasetList, ReplicaSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp})
+	for _, replicaset := range replicasets.Items {
+		replicasetList = append(replicasetList, ReplicaSet{
+			Name:              replicaset.Name,
+			WantedReplicas:    int(*replicaset.Spec.Replicas),
+			AvailableReplicas: int(replicaset.Status.AvailableReplicas),
+			Creation:          replicaset.CreationTimestamp,
+		})
 	}
 
 	return replicasetList, nil

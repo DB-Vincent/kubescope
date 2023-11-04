@@ -9,6 +9,7 @@ var kubeConfig = KubeConfigOptions{}
 
 type KubeConfigOptions struct {
 	Namespaces []string
+	Nodes      []string
 
 	Config *rest.Config
 	Client *kubernetes.Clientset
