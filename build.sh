@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gogio -target android -appid be.vincentdeborger.kubescope .
+gogio -target android -appid be.vincentdeborger.KubeScope -version .

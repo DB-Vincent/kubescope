@@ -14,17 +14,17 @@ type Pod struct {
 
 type Deployment struct {
 	Name     string
-	Creation string
+	Creation metav1.Time
 }
 
 type DaemonSet struct {
 	Name     string
-	Creation string
+	Creation metav1.Time
 }
 
 type ReplicaSet struct {
 	Name     string
-	Creation string
+	Creation metav1.Time
 }
 
 func (opts *KubeConfigOptions) GetPods() ([]Pod, error) {
@@ -57,7 +57,7 @@ func (opts *KubeConfigOptions) GetDeployments() ([]Deployment, error) {
 	}
 
 	for _, deployment := range deployments.Items {
-		deployList = append(deployList, Deployment{Name: deployment.Name, Creation: deployment.CreationTimestamp.GoString()})
+		deployList = append(deployList, Deployment{Name: deployment.Name, Creation: deployment.CreationTimestamp})
 	}
 
 	return deployList, nil
@@ -73,7 +73,7 @@ func (opts *KubeConfigOptions) GetDaemonSets() ([]DaemonSet, error) {
 	}
 
 	for _, daemonset := range daemonsets.Items {
-		daemonsetList = append(daemonsetList, DaemonSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp.GoString()})
+		daemonsetList = append(daemonsetList, DaemonSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp})
 	}
 
 	return daemonsetList, nil
@@ -89,7 +89,7 @@ func (opts *KubeConfigOptions) GetReplicaSets() ([]ReplicaSet, error) {
 	}
 
 	for _, daemonset := range daemonsets.Items {
-		replicasetList = append(replicasetList, ReplicaSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp.GoString()})
+		replicasetList = append(replicasetList, ReplicaSet{Name: daemonset.Name, Creation: daemonset.CreationTimestamp})
 	}
 
 	return replicasetList, nil

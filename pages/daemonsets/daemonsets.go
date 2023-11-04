@@ -1,18 +1,21 @@
 package daemonsets
 
 import (
+	"image"
 	"image/color"
+	"sort"
 
 	"gioui.org/layout"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 
+	alo "github.com/DB-Vincent/kubescope/applayout"
 	"github.com/DB-Vincent/kubescope/icon"
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
+	"github.com/xeonx/timeago"
 )
 
 type (
@@ -29,6 +32,7 @@ type Page struct {
 	// Kubernetes
 	kubeConfig *kubernetes.KubeConfigOptions
 	daemonsets []kubernetes.DaemonSet
+	Connected  bool
 
 	// Refresh
 	refreshBtn widget.Clickable
@@ -36,15 +40,19 @@ type Page struct {
 
 // New constructs a Page with the provided router.
 func New(router *page.Router, kubeConfig *kubernetes.KubeConfigOptions) *Page {
+	connected := true
+
 	daemonsets, err := kubeConfig.GetDaemonSets()
 	if err != nil {
-		panic(err.Error())
+		connected = false
+		// panic(err.Error())
 	}
 
 	return &Page{
 		Router:     router,
 		daemonsets: daemonsets,
 		kubeConfig: kubeConfig,
+		Connected:  connected,
 	}
 }
 
@@ -86,39 +94,78 @@ func (p *Page) NavItem() component.NavItem {
 func (p *Page) Layout(gtx C, th *material.Theme) D {
 	p.List.Axis = layout.Vertical
 
-	var fontSize unit.Sp = 16
-	var visList = layout.List{
-		Axis: layout.Vertical,
-		Position: layout.Position{
-			Offset: 24,
-		},
-	}
-
-	margins := layout.Inset{
-		Top:   unit.Dp(8),
-		Right: unit.Dp(8),
-		Left:  unit.Dp(8),
-	}
-
 	return material.List(th, &p.List).Layout(gtx, 1, func(gtx C, _ int) D {
-		return layout.Flex{
-			Alignment: layout.Start,
-			Axis:      layout.Vertical,
-		}.Layout(gtx,
-			layout.Rigid(func(gtx layout.Context) D {
-				return margins.Layout(gtx,
-					func(gtx C) D {
-						return visList.Layout(gtx, len(p.daemonsets),
-							func(gtx C, index int) D {
-								paragraph := material.Label(th, unit.Sp(float32(fontSize)), p.daemonsets[index].Name)
-								paragraph.Alignment = text.Start
-								return paragraph.Layout(gtx)
-							},
-						)
-					},
-				)
+		if p.Connected {
+			return layout.Flex{
+				Alignment: layout.Start,
+				Axis:      layout.Vertical,
+			}.Layout(gtx,
+				layout.Rigid(func(gtx layout.Context) D {
+					var visList = layout.List{
+						Axis: layout.Vertical,
+						Position: layout.Position{
+							Offset: 24,
+						},
+					}
 
-			}),
-		)
+					margins := layout.Inset{
+						Top:    unit.Dp(8),
+						Right:  unit.Dp(8),
+						Left:   unit.Dp(8),
+						Bottom: unit.Dp(8),
+					}
+
+					sort.SliceStable(p.daemonsets, func(i, j int) bool {
+						return p.daemonsets[i].Name < p.daemonsets[j].Name
+					})
+
+					return margins.Layout(gtx,
+						func(gtx C) D {
+							return visList.Layout(gtx, len(p.daemonsets),
+								func(gtx C, index int) D {
+									return layout.Inset{Bottom: unit.Dp(8)}.Layout(gtx, func(gtx C) D {
+										return layout.Stack{}.Layout(gtx,
+											layout.Expanded(func(gtx C) D {
+												gtx.Constraints.Min.X = gtx.Constraints.Max.X
+												bgSize := image.Point{X: gtx.Constraints.Min.X, Y: gtx.Constraints.Min.Y}
+												return alo.Fill{Col: alo.Rgb(0xffffff)}.Layout(gtx, bgSize)
+											}),
+											layout.Stacked(func(gtx C) D {
+												in := layout.Inset{Top: unit.Dp(8), Right: unit.Dp(16), Bottom: unit.Dp(8), Left: unit.Dp(16)}
+												return in.Layout(gtx, func(gtx C) D {
+													return layout.Flex{
+														Axis:    layout.Vertical,
+														Spacing: layout.SpaceSides,
+													}.Layout(gtx,
+														layout.Rigid(func(gtx C) D {
+															return material.H6(th, p.daemonsets[index].Name).Layout(gtx)
+														}),
+														layout.Rigid(func(gtx C) D {
+															// p.pods[index].Creation.Format(time.RFC822)
+															format := timeago.NoMax(timeago.English)
+															return material.Body2(th, format.Format(p.daemonsets[index].Creation.Time)).Layout(gtx)
+														}),
+													)
+												})
+											}),
+										)
+									})
+								},
+							)
+						},
+					)
+
+				}),
+			)
+		} else {
+			return layout.Flex{
+				Alignment: layout.Middle,
+				Axis:      layout.Horizontal,
+			}.Layout(gtx,
+				layout.Rigid(func(gtx C) D {
+					return material.Body1(th, "Could not connect to cluster!").Layout(gtx)
+				}),
+			)
+		}
 	})
 }

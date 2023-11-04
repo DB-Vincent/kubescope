@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"image/color"
 	"log"
 	"os"
 
+	alo "github.com/DB-Vincent/kubescope/applayout"
 	"github.com/DB-Vincent/kubescope/kubernetes"
 	page "github.com/DB-Vincent/kubescope/pages"
 	"github.com/DB-Vincent/kubescope/pages/daemonsets"
@@ -57,9 +57,9 @@ func main() {
 func draw(w *app.Window) error {
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
-	th.Palette.ContrastBg = color.NRGBA{0, 64, 160, 255}
-	th.Palette.ContrastFg = color.NRGBA{228, 226, 230, 255}
-	th.Palette.Bg = color.NRGBA{0xf2, 0xf2, 0xf2, 0xff}
+	th.Palette.ContrastBg = alo.Rgb(0x0040a0)
+	th.Palette.ContrastFg = alo.Rgb(0xdae2ff)
+	th.Palette.Bg = alo.Rgb(0xf6f5f7)
 	th.Face = font.Typeface("sans-serif")
 
 	var ops op.Ops
